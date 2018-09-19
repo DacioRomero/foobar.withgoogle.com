@@ -1,43 +1,67 @@
 from fractions import Fraction
+from random import uniform, randint
 
 
 def answer(pegs):
-    distances = [pegs[i + 1] - pegs[i] for i in range(len(pegs) - 1)]
-    return answer_distances(distances)
+    if not pegs or len(pegs) < 2:
+        return [-1, -1]
 
+    gaps = []
 
-def answer_distances(distances):
-    dists_len = len(distances)
-    gears = []
+    for i in range(len(pegs) - 1):
+        gap = pegs[i + 1] - pegs[i]
 
-    dists_flipflop = [-e if (dists_len % 2 == 0) == (i % 2 == 0) else e for i, e in enumerate(distances)]
-    gears.append(sum(dists_flipflop) / (-0.5 if dists_flipflop[0] < 0 else 1.5))
-
-    print('gears[0]', gears[0])
-
-    # if gears[0] < 1:  # or gears[0] > distances[0]:
-    #     return [-1, -1]
-
-    for i in range(1, dists_len + 1):
-        slice_dist_flipflop = dists_flipflop[:i]
-        if i % 2 != 0:
-            slice_dist_flipflop = [-e for e in slice_dist_flipflop]
-
-        # print('slice_dist_flipflop', slice_dist_flipflop)
-        gears.append(sum(slice_dist_flipflop) + (gears[0] if slice_dist_flipflop[0] < 0 else -gears[0]))
-        # print('gears[{}] {}'.format(i, gears[i]))
-
-        if gears[i] < 0 or (gears[i] + gears[i - 1]) != distances[i - 1]:
+        if gap < 2:
             return [-1, -1]
 
-    print('gears', gears)
-    fraction = Fraction(gears[0])
+        gaps.append(gap)
+
+    gear = 0
+
+    for i, gap in enumerate(gaps):
+        if (len(gaps) % 2 == 0) == (i % 2 == 0):
+            gear -= gap
+        else:
+            gear += gap
+
+    if len(gaps) % 2 == 0:
+        gear *= -1
+    else:
+        gear /= 3
+
+    if not validate_gear(gear, gaps[-1]):
+        return [-1, -1]
+
+    for i in range(len(gaps) - 1, -1, -1):
+        gear = gaps[i] - gear
+
+        if not validate_gear(gear, gaps[i]):
+            return [-1, -1]
+
+    fraction = Fraction(gear)
     return [fraction.numerator, fraction.denominator]
+
+
+def validate_gear(gear, distance):
+    return gear >= 1 and gear < distance
+
+
+def generate_test(num_pegs):
+    gears = [(randint(2, 50))]
+    gears += [(randint(1, 50)) for _ in range(num_pegs - 2)]
+    gears.append(gears[0] / 2)
+
+    pegs = [randint(1, 100)]
+
+    for i in range(1, num_pegs):
+        pegs.append(pegs[i - 1] + gears[i] + gears[i - 1])
+
+    return (pegs, Fraction(gears[0]))
 
 
 if __name__ == '__main__':
     print(answer([4, 30, 50]))
-    print('-' * 32)
     print(answer([4, 17, 50]))
-    print('-' * 32)
-    print(answer_distances([35, 3, 16, 28, 24, 7]))
+    print(answer([7, 30, 54, 77, 94, 107]))
+    pegs, gear = generate_test(1000)
+    print(gear, answer(pegs))
