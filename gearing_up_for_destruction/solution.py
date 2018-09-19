@@ -16,7 +16,7 @@ def answer(pegs):
 
         gaps.append(gap)
 
-    gear = 0
+    gear = Fraction(0)
 
     for i, gap in enumerate(gaps):
         if (len(gaps) % 2 == 0) == (i % 2 == 0):
@@ -38,8 +38,7 @@ def answer(pegs):
         if not validate_gear(gear, gaps[i]):
             return [-1, -1]
 
-    fraction = Fraction(gear)
-    return [fraction.numerator, fraction.denominator]
+    return [gear.numerator, gear.denominator]
 
 
 def validate_gear(gear, distance):
@@ -47,9 +46,9 @@ def validate_gear(gear, distance):
 
 
 def generate_test(num_pegs):
-    gears = [(randint(2, 50))]
+    gears = [(randint(1, 25)) * 2]
     gears += [(randint(1, 50)) for _ in range(num_pegs - 2)]
-    gears.append(gears[0] / 2)
+    gears.append(gears[0] // 2)
 
     pegs = [randint(1, 100)]
 
